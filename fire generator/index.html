@@ -1,0 +1,86 @@
+<html>
+    <head>
+        <title>generator ognia</title>
+          <link rel="stylesheet" href="style.css" type="text/css" />
+    </head>
+    <body onload="init()">
+        <canvas id="game" width="650" height="400"></canvas>
+
+
+
+
+         <script>
+
+var particles = [];
+var maxLife = 60;
+var speed=3;
+var size=15;
+
+function init() {
+    
+    
+    canvas=document.getElementById("game");
+    stx = canvas.getContext("2d");
+    stx.globalCompositeOperation="lighter";
+    setInterval("update()",40);
+        
+}
+
+//x,y - połozenie, xs,xy prędkosc poruszania po x,y
+
+function Particle(x, y, xs, ys) {
+    this.x=x;
+    this.y=y;
+    this.xs=xs;
+    this.ys=ys;
+    this.life=0;
+}
+
+function update() {
+stx.fillStyle= "rgba(0,0,0)";
+    stx.fillRect(0,0,canvas.width,canvas.height);
+    //Adds ten new particles every frame
+    for (var i=0; i<5; i++) {
+
+        // dodaje czasteczke na danej pozycji z obliczona matematycznie predkoscia x,y
+        var p = new Particle(300, 300, (Math.random()*2*speed-speed)/2, 0-Math.random()*2*speed);
+        particles.push(p);
+        }
+    
+    //czyszczenie
+    stx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    
+    //rysowanie czasteczek
+    for (var i=0; i<particles.length; i++) {
+        
+        //ustawienie koloru czasteczki i jej przezroczystosc
+        stx.fillStyle = "rgba("+(260-(particles[i].life*2))+","+((particles[i].life*2)+50)+","+(particles[i].life*2)+","+(((maxLife-particles[i].life)/maxLife)*0.4)+")";
+        
+        stx.beginPath();
+        //rysowanie koła czasteczki
+        stx.arc(particles[i].x,particles[i].y,(maxLife-particles[i].life)/maxLife*(size/2)+(size/2),0,2*Math.PI);
+        stx.fill();
+        
+        //poruszenie czasteczki o jej predkosc
+        particles[i].x=particles[i].x+particles[i].xs;
+        particles[i].y=particles[i].y+particles[i].ys;
+        //zwiekszenie wartosci życia
+        particles[i].life++;
+        //gdy przekroczy życie to usuwa z tabliczy
+        if (particles[i].life >= maxLife) {
+            particles.splice(i, 1);
+            i--;
+        }
+    }
+
+}
+         </script>
+
+
+    </body>
+</html>
+
+
+
+

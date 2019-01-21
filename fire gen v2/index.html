@@ -1,0 +1,96 @@
+<html>
+    <head>
+        <title>Fire!</title>
+          <link rel="stylesheet" href="style.css" type="text/css" />
+        <script></script>
+    </head>
+    <body onload="init()">
+        <canvas id="game" width="800" height="600"></canvas>
+        
+
+         <script>
+           
+          var canvas;
+var particles = [];
+
+function init() {
+    
+    console.log(Math.random()*6);
+    canvas=document.getElementById("game");
+    ctx = canvas.getContext("2d");
+    //ctx.filter = "blur(5px)";
+    ctx.globalCompositeOperation="lighter";
+    setInterval("update()",50);        
+}
+
+//x,y - połozenie, xs,xy prędkosc poruszania po x,y
+
+function Particle(xStart, yStart, life, pColor) {
+    this.xStart=xStart;
+    this.yStart=yStart;
+    this.life=life;
+    this.pColor=pColor;
+}
+
+var temp;
+function update() {
+
+    //Adds ten new particles every frame
+    for (var i=0; i<80; i++) {
+        if(i>=0 & i<=10){
+            temp=Math.floor((Math.random() * 15) + 5);
+         }
+
+         if(i>10 & i<=20){
+            temp=Math.floor((Math.random() * 20) + 10);
+        }
+         if(i>20 & i<=30){
+            temp=Math.floor((Math.random() * 25) + 15);
+        } 
+        if(i>30 & i<=40){
+            temp=Math.floor((Math.random() * 30) + 20);
+        }
+         if(i>40 & i<=50){
+            temp=Math.floor((Math.random() * 30) + 20);
+        }
+        if(i>50 & i<=60){
+            temp=Math.floor((Math.random() * 25) + 15);
+        }
+        if(i>60 & i<=70){
+            temp=Math.floor((Math.random() * 20) + 10);
+        }
+        if(i>70 & i<=80){
+            temp=Math.floor((Math.random() * 15) + 5);
+        }
+        var p = new Particle(i*10, 10, temp, 250);
+        particles.push(p);
+    }
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = "rgba(0,0,0,1)";
+    ctx.fillRect(0,0,canvas.width/2, canvas.height);
+    for (var i=0; i<particles.length; i++) {
+        ctx.fillStyle = "rgba(255,"+(250 -particles[i].life*12)+","+0+","+1+")";
+       // ctx.fillRect(particles[i].xStart,600-particles[i].yStart,10,10);
+
+        ctx.beginPath();
+		ctx.arc(particles[i].xStart,600-particles[i].yStart, particles[i].life/2+2, 0, Math.PI*2, true); 
+		ctx.closePath();
+		ctx.fill();
+
+        particles[i].yStart+=10;
+        particles[i].life--;
+        if (particles[i].life <= 0) {
+            particles.splice(i, 1);
+            i--;
+        }
+    }
+}
+         </script>
+
+
+    </body>
+</html>
+
+
+
+

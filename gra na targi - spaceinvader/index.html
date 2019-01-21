@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Gra HTML5/JS</title>
+  <link rel="stylesheet" href="style.css" type="text/css" />
+</head>
+
+<body>
+<canvas id="myCanvas" width="640" height="480">
+Your browser does not support the canvas element.
+</canvas>
+
+<script>
+
+var stillPlaying=true; //zmienna warunku gry
+var points = 0;  // punkty
+var animationPressRScreen=0;
+var canvas = document.getElementById("myCanvas");// myCanvas jako pole "renderowanie"
+var ctx = canvas.getContext("2d"); // typ "renderowania" ustawione na 2d
+window.addEventListener('keydown',this.check,false); // obsługa zdarzeń - key listener
+// dane playera
+var playerX=470;
+var playerY=400;
+var playerMissleX;
+var playerMissleY;
+var playerMissleisUp=true;
+var playerLife=1;
+var enemyDestroyedThisBoard=18;
+var enemyDestroyedThisSession=0;
+var enemyLightTimer=0;
+//dane ziemi
+var earthMoveTimer=0;
+var earthMove=0;
+//dane poruszania sie przeciwnika
+var enemyMoveX=0;
+var enemyMoveY=0;
+var enemySpeed=1; 
+// tablica przeciwników
+function platformObj(startX, startY, rectWidth, rectHeight, colorR, colorG, colorB, shootGenerator, missleX, missleY, missleIsUp, isDestroyed){
+    this.sX = startX;
+    this.sY = startY;
+    this.rW = rectWidth;
+    this.rH = rectHeight;
+    this.cR = colorR;
+    this.cG = colorG;
+    this.cB = colorB;
+    this.sG = shootGenerator;
+    this.mX = missleX;
+    this.mY = missleY;
+    this.missleUp = missleIsUp;
+    this.destroyed = isDestroyed;
+}
+
+var myLifeRect = new lifeRect(0,0,false,false);
+function lifeRect(lStartX, lStartY,lIsGrabAble){
+    this.lStartX=lStartX;
+    this.lStartY=lStartY;
+    this.lIsGrabAble=lIsGrabAble;
+}
+// platformObj - pozycja x, y, szerokosc, wysokosc, R,G,B, generator strzalów, pozycja pocisku x, y, czy pocisk gotowy czy przeciwnik zywy
+
+myRectangle = new     platformObj(30,30,40,40, Math.floor((Math.random() * 255) + 1),Math.floor((Math.random() * 255) + 1),Math.floor((Math.random() * 255) +1),Math.floor((Math.random() * 300) +100),0,0,true,false  );
+//pierwsza kolumna enemy
+platformArraly = [myRectangle,
+                     new platformObj(30,90,40,40, Math.floor((Math.random() * 255) + 1),Math.floor((Math.random() * 255) + 1),Math.floor((Math.random() * 255) +1),Math.floor((Math.random() * 300) +100),0,0,true,false ),
+                     new platformObj(30,150,40,40,Math.floor((Math.random() * 255) + 1),Math.floor((Math.random() * 255) + 1),Math.floor((Math.random() * 255) +1),Math.floor((Math.random() * 300) +100),0,0,true,false ),
+                     //2ga kolumna enemy
+                     new platformObj(90,30,40,40, Math.floor((Math.random() * 255) + 1),Math.floor((Math.random() * 255) + 1),Math.floor((Math.random() * 255) +1),Math.floor((Math.random() * 300) +100),0,0,true,false ),
+                     new platformObj(90,90,40,40, Math.floor((Math.random() * 255) + 1),Math.floor((Math.random() * 255) + 1),Math.floor((Math.random() * 255) +1),Math.floor((Math.random() * 300) +100),0,0,true,false ),
+                     new platformObj(90,150,40,40,Math.floor((Math.random() * 255) + 1),Math.floor((Math.random() * 255) + 1),Math.floor((Math.random() * 255) +1),Math.floor((Math.random() * 300) +100),0,0,true,false ),
+                     // 3cia kolumna enemy
+                     new platformObj(150,30,40,40, Math.floor((Math.random() * 255) + 1),Math.floor((Math.random() * 255) + 1),Math.floor((Math.random() * 255) +1),Math.floor((Math.random() * 300) +100),0,0,true,false ),
+                     new platformObj(150,90,40,40, Math.floor((Math.random() * 255) + 1),Math.floor((Math.random() * 255) + 1),Math.floor((Math.random() * 255) +1),Math.floor((Math.random() * 300) +100),0,0,true,false ),
+                     new platformObj(150,150,40,40,Math.floor((Math.random() * 255) + 1),Math.floor((Math.random() * 255) + 1),Math.floor((Math.random() * 255) +1),Math.floor((Math.random() * 300) +100),0,0,true,false ),
+                     // 4ta kolumna enemy
+                     new platformObj(220,30,40,40, Math.floor((Math.random() * 255) + 1),Math.floor((Math.random() * 255) + 1),Math.floor((Math.random() * 255) +1),Math.floor((Math.random() * 300) +100),0,0,true,false ),
+                     new platformObj(220,90,40,40, Math.floor((Math.random() * 255) + 1),Math.floor((Math.random() * 255) + 1),Math.floor((Math.random() * 255) +1),Math.floor((Math.random() * 300) +100),0,0,true,false ),
+                     new platformObj(220,150,40,40,Math.floor((Math.random() * 255) + 1),Math.floor((Math.random() * 255) + 1),Math.floor((Math.random() * 255) +1),Math.floor((Math.random() * 300) +100),0,0,true,false ),
+                     // 5ta kolumna enemy
+                     new platformObj(290,30,40,40, Math.floor((Math.random() * 255) + 1),Math.floor((Math.random() * 255) + 1),Math.floor((Math.random() * 255) +1),Math.floor((Math.random() * 300) +100),0,0,true,false ),
+                     new platformObj(290,90,40,40, Math.floor((Math.random() * 255) + 1),Math.floor((Math.random() * 255) + 1),Math.floor((Math.random() * 255) +1),Math.floor((Math.random() * 300) +100),0,0,true,false ),
+                     new platformObj(290,150,40,40,Math.floor((Math.random() * 255) + 1),Math.floor((Math.random() * 255) + 1),Math.floor((Math.random() * 255) +1),Math.floor((Math.random() * 300) +100),0,0,true,false ),
+                     // 6ta kolumna enemy
+                     new platformObj(360,30,40,40, Math.floor((Math.random() * 255) + 1),Math.floor((Math.random() * 255) + 1),Math.floor((Math.random() * 255) +1),Math.floor((Math.random() * 300) +100),0,0,true,false ),
+                     new platformObj(360,90,40,40, Math.floor((Math.random() * 255) + 1),Math.floor((Math.random() * 255) + 1),Math.floor((Math.random() * 255) +1),Math.floor((Math.random() * 300) +100),0,0,true,false ),
+                     new platformObj(360,150,40,40,Math.floor((Math.random() * 255) + 1),Math.floor((Math.random() * 255) + 1),Math.floor((Math.random() * 255) +1),Math.floor((Math.random() * 300) +100),0,0,true,false ),
+                     // 7ma kolumna enemy
+                     new platformObj(430,30,40,40, Math.floor((Math.random() * 255) + 1),Math.floor((Math.random() * 255) + 1),Math.floor((Math.random() * 255) +1),Math.floor((Math.random() * 300) +100),0,0,true,false ),
+                     new platformObj(430,90,40,40, Math.floor((Math.random() * 255) + 1),Math.floor((Math.random() * 255) + 1),Math.floor((Math.random() * 255) +1),Math.floor((Math.random() * 300) +100),0,0,true,false ),
+                     new platformObj(430,150,40,40,Math.floor((Math.random() * 255) + 1),Math.floor((Math.random() * 255) + 1),Math.floor((Math.random() * 255) +1),Math.floor((Math.random() * 300) +100),0,0,true,false ),]
+ctx.font="15px Arial";
+var grd;
+
+function updateScreen(){
+  if(stillPlaying==true){
+    // sprawdzenie warunków gry
+      checkStateOfGame();
+      clearGameAndBacgroundArea();  
+      drawingEnemyFromArray();
+      drawingPlayer();  
+
+    }
+    else {
+      restartScreen();
+    }
+}
+
+function reinitEnemy(){
+
+enemyMoveX=0;
+enemyMoveY=0;
+enemySpeed=1;
+playerMissleY=playerY;
+playerMissleisUp=true;
+platformArraly.length=0;
+earthMoveTimer=0;
+earthMove=0;
+myRectangle = new     platformObj(30,30,40,40, Math.floor((Math.random() * 255) + 1),Math.floor((Math.random() * 255) + 1),Math.floor((Math.random() * 255) +1),Math.floor((Math.random() * 300) +100),0,0,true,false  );
+//pierwsza kolumna enemy
+ platformArraly = [myRectangle,
+                      new platformObj(30,90,40,40, Math.floor((Math.random() * 255) + 1),Math.floor((Math.random() * 255) + 1),Math.floor((Math.random() * 255) +1),Math.floor((Math.random() * 300) +100),0,0,true,false ),
+                      new platformObj(30,150,40,40,Math.floor((Math.random() * 255) + 1),Math.floor((Math.random() * 255) + 1),Math.floor((Math.random() * 255) +1),Math.floor((Math.random() * 300) +100),0,0,true,false ),
+                      //2ga kolumna enemy
+                      new platformObj(90,30,40,40, Math.floor((Math.random() * 255) + 1),Math.floor((Math.random() * 255) + 1),Math.floor((Math.random() * 255) +1),Math.floor((Math.random() * 300) +100),0,0,true,false ),
+                      new platformObj(90,90,40,40, Math.floor((Math.random() * 255) + 1),Math.floor((Math.random() * 255) + 1),Math.floor((Math.random() * 255) +1),Math.floor((Math.random() * 300) +100),0,0,true,false ),
+                      new platformObj(90,150,40,40,Math.floor((Math.random() * 255) + 1),Math.floor((Math.random() * 255) + 1),Math.floor((Math.random() * 255) +1),Math.floor((Math.random() * 300) +100),0,0,true,false ),
+                      // 3cia kolumna enemy
+                      new platformObj(150,30,40,40, Math.floor((Math.random() * 255) + 1),Math.floor((Math.random() * 255) + 1),Math.floor((Math.random() * 255) +1),Math.floor((Math.random() * 300) +100),0,0,true,false ),
+                      new platformObj(150,90,40,40, Math.floor((Math.random() * 255) + 1),Math.floor((Math.random() * 255) + 1),Math.floor((Math.random() * 255) +1),Math.floor((Math.random() * 300) +100),0,0,true,false ),
+                      new platformObj(150,150,40,40,Math.floor((Math.random() * 255) + 1),Math.floor((Math.random() * 255) + 1),Math.floor((Math.random() * 255) +1),Math.floor((Math.random() * 300) +100),0,0,true,false ),
+                      // 4ta kolumna enemy
+                      new platformObj(220,30,40,40, Math.floor((Math.random() * 255) + 1),Math.floor((Math.random() * 255) + 1),Math.floor((Math.random() * 255) +1),Math.floor((Math.random() * 300) +100),0,0,true,false ),
+                      new platformObj(220,90,40,40, Math.floor((Math.random() * 255) + 1),Math.floor((Math.random() * 255) + 1),Math.floor((Math.random() * 255) +1),Math.floor((Math.random() * 300) +100),0,0,true,false ),
+                      new platformObj(220,150,40,40,Math.floor((Math.random() * 255) + 1),Math.floor((Math.random() * 255) + 1),Math.floor((Math.random() * 255) +1),Math.floor((Math.random() * 300) +100),0,0,true,false ),
+                      // 5ta kolumna enemy
+                      new platformObj(290,30,40,40, Math.floor((Math.random() * 255) + 1),Math.floor((Math.random() * 255) + 1),Math.floor((Math.random() * 255) +1),Math.floor((Math.random() * 300) +100),0,0,true,false ),
+                      new platformObj(290,90,40,40, Math.floor((Math.random() * 255) + 1),Math.floor((Math.random() * 255) + 1),Math.floor((Math.random() * 255) +1),Math.floor((Math.random() * 300) +100),0,0,true,false ),
+                      new platformObj(290,150,40,40,Math.floor((Math.random() * 255) + 1),Math.floor((Math.random() * 255) + 1),Math.floor((Math.random() * 255) +1),Math.floor((Math.random() * 300) +100),0,0,true,false ),
+                      // 6ta kolumna enemy
+                      new platformObj(360,30,40,40, Math.floor((Math.random() * 255) + 1),Math.floor((Math.random() * 255) + 1),Math.floor((Math.random() * 255) +1),Math.floor((Math.random() * 300) +100),0,0,true,false ),
+                      new platformObj(360,90,40,40, Math.floor((Math.random() * 255) + 1),Math.floor((Math.random() * 255) + 1),Math.floor((Math.random() * 255) +1),Math.floor((Math.random() * 300) +100),0,0,true,false ),
+                      new platformObj(360,150,40,40,Math.floor((Math.random() * 255) + 1),Math.floor((Math.random() * 255) + 1),Math.floor((Math.random() * 255) +1),Math.floor((Math.random() * 300) +100),0,0,true,false ),
+                      // 7ma kolumna enemy
+                      new platformObj(430,30,40,40, Math.floor((Math.random() * 255) + 1),Math.floor((Math.random() * 255) + 1),Math.floor((Math.random() * 255) +1),Math.floor((Math.random() * 300) +100),0,0,true,false ),
+                      new platformObj(430,90,40,40, Math.floor((Math.random() * 255) + 1),Math.floor((Math.random() * 255) + 1),Math.floor((Math.random() * 255) +1),Math.floor((Math.random() * 300) +100),0,0,true,false ),
+                      new platformObj(430,150,40,40,Math.floor((Math.random() * 255) + 1),Math.floor((Math.random() * 255) + 1),Math.floor((Math.random() * 255) +1),Math.floor((Math.random() * 300) +100),0,0,true,false ),]
+}
+
+setInterval(function(){updateScreen()}, 20);
+
+function drawEarth(){
+
+  earthMoveTimer++;
+  if(earthMoveTimer==40){
+    earthMoveTimer=0;
+    earthMove++;
+  }
+      ctx.beginPath();
+      ctx.arc(255, 1200, 800+earthMove, 0, 2 * Math.PI, false);
+      ctx.fillStyle = 'green';
+      ctx.fill();
+      ctx.lineWidth = 5;
+      ctx.strokeStyle = '#003300';
+      ctx.stroke();
+}
+
+function drawingEnemyFromArray(){
+
+  //przegladanie tablicy przeciwników
+  for(var i = 0; i<platformArraly.length;i++){
+    //rysowanie pod warunkiem ze przeciwnik nie zostal zniszczony
+        if(platformArraly[i].destroyed ==false){
+            ctx.fillStyle="rgb(255,50,50)";
+            //ctx.fillRect(platformArraly[i].sX-1,platformArraly[i].sY-1,platformArraly[i].rW+2, platformArraly[i].rH+2);
+            ctx.fillStyle = "rgb("+platformArraly[i].cR+","+platformArraly[i].cG+","+platformArraly[i].cB+")";
+            // ctx.fillRect(platformArraly[i].sX,platformArraly[i].sY,platformArraly[i].rW,platformArraly[i].rH);
+            // ctx.fillStyle="rgb(255,50,50)";
+            ctx.fillRect(platformArraly[i].sX+5,platformArraly[i].sY+5, 30,30);
+            ctx.fillRect(platformArraly[i].sX,platformArraly[i].sY, 15,15);
+            ctx.fillRect(platformArraly[i].sX+25,platformArraly[i].sY, 15,15);
+            ctx.fillRect(platformArraly[i].sX+2,platformArraly[i].sY+25, 15,10);
+            ctx.fillRect(platformArraly[i].sX+23,platformArraly[i].sY+25, 15,10);
+            ctx.fillRect(platformArraly[i].sX+10,platformArraly[i].sY+30, 5,15);
+            ctx.fillRect(platformArraly[i].sX+25,platformArraly[i].sY+30, 5,15);
+            ctx.fillStyle="rgb(0,0,90)";
+            ctx.fillRect(platformArraly[i].sX+13,platformArraly[i].sY+19, 14,5);
+            ctx.fillRect(platformArraly[i].sX+15,platformArraly[i].sY+22  ,10,5);
+            ctx.fillStyle="rgb(255,0,0)";
+            // miganie swiatelek przeciwników
+            if(enemyLightTimer<=80){
+                ctx.fillRect(platformArraly[i].sX+3,platformArraly[i].sY,7,3);
+                ctx.fillRect(platformArraly[i].sX+29,platformArraly[i].sY,7,3);
+                ctx.fillRect(platformArraly[i].sX+2,platformArraly[i].sY+25, 3,3);
+                ctx.fillRect(platformArraly[i].sX+36,platformArraly[i].sY+25, 3,3);
+            }
+            if(enemyLightTimer>120){
+              enemyLightTimer=0;
+            }
+            //obnizanie przeciwnika jak osiagnie warunki brzegowe
+            platformArraly[i].sX=platformArraly[i].sX+enemySpeed;
+            if(enemyMoveX>75 || enemyMoveX <(-30)){
+              platformArraly[i].sY=platformArraly[i].sY+7;
+            } 
+            // sprawdzanie kolizji pocisku z przeciwnikiem 
+            if(playerMissleY>platformArraly[i].sY&& playerMissleY<platformArraly[i].sY+40){
+               if(playerMissleX>platformArraly[i].sX&& playerMissleX<platformArraly[i].sX+40){
+                  platformArraly[i].destroyed=true;
+                  playerMissleisUp=true;
+                  enemyDestroyedThisBoard++;
+                  enemyDestroyedThisSession++;
+                  // @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+                  // @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+                  // @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+                  // @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+                  // @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+                  if(myLifeRect.lIsGrabAble==false & Math.floor((Math.random() * 255) + 1)>240){
+                      //console.log("Life F");
+                      myLifeRect.lIsGrabAble=true;
+                      myLifeRect.lStartX=Math.floor((Math.random() * 500) + 20);
+                      myLifeRect.lStartY=platformArraly[i].sY;
+                      console.log("gened life");
+                  }
+                  
+                  if(enemyDestroyedThisBoard==21){
+                    reinitEnemy();
+                    enemyDestroyedThisBoard=0;
+                  }
+                  playerMissleY=playerY;  
+                  points=points+100;
+                }
+            }
+            if(platformArraly[i].missleUp==true){
+                platformArraly[i].sG=Math.floor((Math.random() * 300) +10);
+            }
+            // pociski obcych
+            if(platformArraly[i].sG<=10 & platformArraly[i].missleUp==true){// warunek wystrzelenia
+                 platformArraly[i].missleUp=false;//zmiana wartosci logiczne do strzalu dla przeciwnika
+                 platformArraly[i].mX=platformArraly[i].sX+20;//pozycja wystrzalu
+                 platformArraly[i].mY=platformArraly[i].sY+40;//pozycja wystrzalu                
+            } 
+            if(platformArraly[i].mY>460){
+                platformArraly[i].missleUp=true;
+                platformArraly[i].mY=platformArraly[i].sY;
+                platformArraly[i].sg=Math.floor((Math.random() * 300) +10);   
+                //console.log("trorlroro")
+            }
+            if(platformArraly[i].missleUp==false){//wchodzi jak pocisk w locie
+              platformArraly[i].mY=platformArraly[i].mY+5;// porusza pociskiem
+              ctx.fillStyle = "rgb("+platformArraly[i].cR+","+platformArraly[i].cG+","+platformArraly[i].cB+")";
+              ctx.fillRect(platformArraly[i].mX,platformArraly[i].mY,3,6); //rysowanie pocisku
+              if(platformArraly[i].mY>playerY & platformArraly[i].mY<playerY+10 ){
+                if(platformArraly[i].mX>playerX-4 & platformArraly[i].mX<playerX+14){
+                   playerLife=playerLife-1;
+                   platformArraly[i].mX=platformArraly[i].sX;
+                   platformArraly[i].missleUp = true;
+                   console.log("hitedx");
+                   if(playerLife==0){
+                      stillPlaying=false; 
+                      platformArraly[i].mY=platformArraly[i].sY;
+                      platformArraly[i].missleIsUp=true;
+                    }
+                }
+              }   
+            }
+          }
+          
+      }
+      enemyLightTimer++;
+      ctx.fillStyle="rgb(255,0,0)";
+      lifeBox(i);
+}
+
+function clearGameAndBacgroundArea(){
+
+   // czyszczenie obszaru gry
+   ctx.clearRect(0, 0, canvas.width, canvas.height);
+   ctx.fillStyle="rgb(16,16,80)";
+   ctx.fillRect(0,0,canvas.width-90  ,canvas.height);
+   //  tworzymy gradient
+   grd = ctx.createLinearGradient(150.000, 0.000, 150.000, 300.000);      
+      // dodajemy kolory
+   grd.addColorStop(0.000, 'rgba(0, 0, 0, 1.000)');
+   grd.addColorStop(1.000, 'rgba(16, 16, 80, 1.000)');      
+      // wypełniamy gradientem pola gry
+   ctx.fillStyle = grd;
+   ctx.fillRect(0,0,canvas.width-90  ,canvas.height);
+   drawEarth();   
+   // linia oddzielajaca ekran statystyk od pola gry
+   ctx.fillStyle="rgb(140,140,140)";
+   ctx.fillRect(552,0,110,800)
+
+}
+
+function drawingPlayer(){
+
+  if(enemyMoveX>75 || enemyMoveX <(-30)){
+     enemySpeed*=-1;
+     enemyMoveY=enemyMoveY+1;
+   }     
+  // poruszanie pocisku gracza
+  if(playerMissleisUp!=true){
+      playerMissleY=playerMissleY-9;
+      if(playerMissleY<0){
+        playerMissleisUp=true;
+        playerMissleY=playerY;  
+      }
+  }
+    // poruszanie sie przeciwnika, pomaga przy matematyce
+  enemyMoveX=enemyMoveX+enemySpeed;
+    //rysowanie postaci GRACZA
+  ctx.fillStyle="rgb(0,0,0)";
+  ctx.fillRect(playerX,playerY,10,16);
+  ctx.fillRect(playerX,playerY+16,4,5);
+  ctx.fillRect(playerX+6,playerY+16,4,5);
+  ctx.fillRect(playerX+10,playerY+18,4,3);
+  ctx.fillRect(playerX-4,playerY+18,4,3);
+  ctx.fillRect(playerX-4,playerY+5,4,5);
+  ctx.fillRect(playerX+10,playerY+5,4,5);
+  ctx.fillStyle="rgb(0,255,0)";
+  ctx.fillRect(playerX+6,playerY+4,2,2);
+  ctx.fillRect(playerX+2,playerY+4,2,2);
+
+  if(playerMissleisUp==false){
+     ctx.fillStyle="rgb(255,0,0)";
+     ctx.fillRect(playerMissleX,playerMissleY,3,6);
+   }
+   //linia i dane gracza - wynik, życia
+   ctx.fillStyle="rgb(0,0,0)";
+   ctx.fillRect(550,0,2,800);
+   ctx.fillStyle="rgb(0,0,0)";
+   ctx.font = "15px Arial";
+   ctx.fillText("Points: "+points,555,30);   
+   ctx.fillText("Lifes: "+playerLife,555,50);   
+   ctx.fillText("Enemies: "+(21-enemyDestroyedThisBoard),555,70); 
+   ctx.fillText("Killed: "+(enemyDestroyedThisSession),555,90); 
+   ctx.fillText("ArrowS: ",555,400); 
+   ctx.fillText("ArrowS: ",556,401); 
+   ctx.fillText("controll ",555,415); 
+   ctx.fillText("R - Restart: ",555,450);
+}
+
+function restartScreen(){
+  animationPressRScreen++;
+
+  ctx.fillStyle="rgb(16,16,80)";
+  ctx.fillRect(0,0,canvas.width-90  ,canvas.height)
+  ctx.font = "34px Comic Sans MS";
+  ctx.strokeStyle="rgb(0,5,5)";
+  ctx.fillStyle = "white";
+  if(animationPressRScreen<70){
+      ctx.strokeText("Press 'R' to restart",120,240);  
+      ctx.fillText("Press 'R' to restart",120,240);  
+  }
+  if(animationPressRScreen>100){
+      animationPressRScreen=0;
+  }
+    console.log(animationPressRScreen)
+}
+
+function checkStateOfGame(){
+
+  if(enemyMoveY==30){
+      stillPlaying=false;
+  }
+}
+
+function check(e) {
+//37 lewo, 39 prawo, 38 góra, 40 dół
+      if(e.keyCode==37){
+        if(playerX>=10){
+          playerX=playerX-3; 
+        }
+      };
+
+      if(e.keyCode==39){
+        if(playerX<=530){
+          playerX=playerX+3;
+        }
+      };
+
+      if(e.keyCode==32){
+        if(playerMissleisUp==true){
+           playerMissleisUp=false;
+           playerMissleX=playerX+4;
+           playerMissleY=playerY-6;
+         }
+      }
+      if(e.keyCode==82){
+       stillPlaying=true;
+       enemyMoveY=0;
+       playerLife=3;
+       points=0;
+       enemyDestroyedThisBoard=0;
+       enemyDestroyedThisSession=0;
+       myLifeRect.lIsGrabAble=false;
+       myLifeRect.lStartY=0;
+       myLifeRect.lStartX=0;
+       reinitEnemy();
+      }
+}
+
+function lifeBox(i){
+  this.i=i;
+   if(myLifeRect.lIsGrabAble==true){
+      myLifeRect.lStartY+=1 ;
+      ctx.fillRect(myLifeRect.lStartX,myLifeRect.lStartY,20,20);
+      console.log( myLifeRect.lStartY);
+       if(myLifeRect.lStartY>playerY & myLifeRect.lStartY<playerY+10 ){
+           if(myLifeRect.lStartX>playerX-4 & myLifeRect.lStartX<playerX+14){
+
+              playerLife++;
+              myLifeRect.lIsGrabAble=false;
+
+           }
+        }
+        else if(myLifeRect.lStartY>460){
+          myLifeRect.lIsGrabAble=false;
+
+
+        }
+   }
+   //console.log( myLifeRect.lStartY);
+
+
+
+
+}
+
+
+</script>
+
+</body>
+</html>

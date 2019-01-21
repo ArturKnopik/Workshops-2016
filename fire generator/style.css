@@ -1,0 +1,79 @@
+a:hover { 
+    border-bottom: 1px solid blue;
+}
+
+
+
+img {
+	    transition: all 1s;
+	    border: 5px solid rgb(0,0,0 	);
+}
+img:hover{
+
+	 border: 5px solid rgb(100,100,255);
+}
+
+table, th, td,tr {
+   border: 1px solid black;
+}
+table{
+    /*border-collapse: collapse;*/
+    border-left: 4px solid black;
+}
+
+th{
+    width: 100px;
+}
+
+ul.b{
+	list-style-type:none;
+	color:red; 
+}
+li.b{
+	height: 30px;
+	width: 200px;
+}
+
+button {
+    border: soldi 3px black;
+    background-color: #4CAF50;
+    color: white;
+    padding: 15px 32px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin: 4px 2px;
+    cursor: pointer;
+    width: 195px;
+    height: 80px;
+}
+canvas {
+    position: absolute;
+    border: 2px solid #000000;
+    margin: 2px;
+    left: 0%;
+    right: 0%;
+    width: auto;
+    height: 95%;
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom: 30px;
+}
+background 
+
+
+#wyniki {
+    padding: 5px;
+    position: absolute;
+    top:15%;
+    bottom: 15%;
+    left: 660px;
+    border: solid 2px white;   
+    width: 400px; 
+    height: 470px;
+    overflow: auto;
+}
+body {
+    background-color: #000000;
+}
